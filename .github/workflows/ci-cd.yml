@@ -43,9 +43,9 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
-            echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
-            export KUBECONFIG=$PWD/kubeconfig
-            kubectl version --client
+          printf "%s" "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl version --client
 
       - name: Deploy to Kubernetes
         run: |
