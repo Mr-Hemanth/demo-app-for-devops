@@ -43,14 +43,14 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
-          export KUBECONFIG=$PWD/kubeconfig
-          kubectl version --client
+            echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
+            export KUBECONFIG=$PWD/kubeconfig
+            kubectl version --client
 
       - name: Deploy to Kubernetes
         run: |
           export KUBECONFIG=$PWD/kubeconfig
-          sed -i "s|YOUR_DOCKERHUB_USERNAME/demo-app:latest|${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha }}|g" k8s/deployment.yaml
+          sed -i "s|mrhemanth/demo-app:latest|${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha }}|g" k8s/deployment.yaml
           kubectl apply -f k8s/
           kubectl rollout status deployment/demo-app --timeout=120s
 
