@@ -53,5 +53,6 @@ jobs:
           sed -i "s|mrhemanth/demo-app:latest|${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha }}|g" k8s/deployment.yaml
           kubectl apply -f k8s/
           kubectl rollout status deployment/demo-app --timeout=120s
+          
 
 
