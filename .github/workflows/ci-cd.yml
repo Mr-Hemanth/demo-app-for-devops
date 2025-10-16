@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-push-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       IMAGE_NAME: mrhemanth/demo-app
 
