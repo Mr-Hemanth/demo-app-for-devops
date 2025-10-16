@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   res.send(`
     <h2>Demo Form</h2>
     <form method="POST" action="/submit">
-      <input type="text" name="name" placeholder="Enter your name" required />
+      <input type="text" name="name" placeholder="Enter your Full-name" required />
       <input type="email" name="email" placeholder="Enter your email" required />
       <button type="submit">Submit</button>
     </form>
