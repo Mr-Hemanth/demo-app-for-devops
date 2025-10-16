@@ -4,37 +4,65 @@ on:
   push:
     branches: [ main ]
 
-jobs:
-  build-push-deploy:
-    runs-on: self-hosted
-    env:
-      IMAGE_NAME: mrhemanth/demo-app
+env:
+  IMAGE_NAME: mrhemanth/demo-app
 
+jobs:
+  # =======================
+  # 1️⃣ Build Job
+  # =======================
+  build:
+    runs-on: self-hosted
+    outputs:
+      sha: ${{ steps.vars.outputs.sha }}
     steps:
-      # Step 1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Login to Docker Hub
-      - name: Docker Login
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      # Step 3: Get short SHA
       - name: Get short SHA
         id: vars
         run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      # Step 4: Build and push Docker image
-      - name: Build and Push Docker Image
+      - name: Build Docker Image
         run: |
           docker build -t $IMAGE_NAME:latest -t $IMAGE_NAME:${{ steps.vars.outputs.sha }} .
-          docker push $IMAGE_NAME:latest
-          docker push $IMAGE_NAME:${{ steps.vars.outputs.sha }}
+          echo "Built image: $IMAGE_NAME:${{ steps.vars.outputs.sha }}"
 
-      # Step 5: Deploy to local Minikube
-      - name: Deploy to Local Kubernetes
+  # =======================
+  # 2️⃣ Push Job
+  # =======================
+  push:
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Tag & Push Image
         run: |
-          echo "Deploying image $IMAGE_NAME:${{ steps.vars.outputs.sha }} to local Minikube..."
-          sed -i '' "s|image:.*|image: $IMAGE_NAME:${{ steps.vars.outputs.sha }}|g" k8s/deployment.yaml
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker tag $IMAGE_NAME:${SHORT_SHA} $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:latest
+          docker push $IMAGE_NAME:${SHORT_SHA}
+          echo "✅ Pushed $IMAGE_NAME:${SHORT_SHA} to Docker Hub"
+
+  # =======================
+  # 3️⃣ Deploy Job
+  # =======================
+  deploy:
+    runs-on: self-hosted
+    needs: push
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Local Kubernetes (Minikube)
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "🚀 Deploying image $IMAGE_NAME:${SHORT_SHA} to local Minikube..."
+          sed -i '' "s|image:.*|image: $IMAGE_NAME:${SHORT_SHA}|g" k8s/deployment.yaml
           kubectl apply -f k8s/
           kubectl rollout status deployment/demo-app --timeout=120s
