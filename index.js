@@ -77,7 +77,7 @@ app.get('/', (req, res) => {
       <div class="form-container">
         <h2>Submit Your Details</h2>
         <form id="demoForm">
-          <input type="text" name="name" placeholder="Enter your First name" required />
+          <input type="text" name="name" placeholder="Hemanth" required />
           <input type="email" name="email" placeholder="Enter your Email" required />
           <button type="submit">Submit</button>
         </form>
