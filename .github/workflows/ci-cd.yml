@@ -66,3 +66,4 @@ jobs:
           sed -i '' "s|image:.*|image: $IMAGE_NAME:${SHORT_SHA}|g" k8s/deployment.yaml
           kubectl apply -f k8s/
           kubectl rollout status deployment/demo-app --timeout=120s
+          
